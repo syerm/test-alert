@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  labels:
+    app: aurora-projectapp
+    release: prometheus-operator
+  name: alertmanagerconfig-slack
+  namespace: monitoring
+spec:
+  receivers:
+    - name: 'slack-notifications'
+      slackConfigs:
+        - apiURL:
+            name: test-alerts-secret
+            key: slackApiUrl
+          channel: 'test-notifications'
+          sendResolved: true        
+          text: |-
+            {{ range .Alerts }}
+              <don't equal>
+              *Description:* {{ .Annotations.description }}
+              *Details:*
+              {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+              {{ end }}
+            {{ end }}
+          title: >-
+            {{ range .Alerts }}{{ .Annotations.summary }} [{{ .Labels.severity
+            }}] - {{ .Labels.cluster }}
+
+            {{ end }}
+  # route:
+  #   groupBy:
+  #     - alertname
+  #     - error_type
+  #     - container
+  #     - namespace
+  #     - env
+  #   matchers:
+  #     # - name: alertname
+  #     #   value: kv_issue
+  #     - name: alertname
+  #       value: container      
+  #   receiver: 'slack-notifications'
+
+  route:
+    groupBy:
+    - job
+    groupInterval: 60s
+    groupWait: 60s
+    receiver: 'slack-notifications'
+    repeatInterval: 5m
+    routes:
+    - matchers:
+      - name: job
+        value: service-kv
+      receiver: 'slack-notifications'

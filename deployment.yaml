@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluentd
+  namespace: syer
+  labels:
+    k8s-app: fluentd
+spec:
+  selector:
+    matchLabels:
+      name: fluentd
+  template:
+    metadata:
+      labels:
+        name: fluentd
+    spec:
+      containers:
+      - name: one
+        image: fluentd:latest
+      - name: two
+        image: fluentd:latest
+      - name: three
+        image: busybox:latest
+
